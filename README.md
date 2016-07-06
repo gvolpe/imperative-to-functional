@@ -1,7 +1,7 @@
 imperative-to-functional
 ========================
 
-*** Exercise 1 ***
+### Exercise 1
 
 Given a number of users the program should define which type of server should be used.
 
