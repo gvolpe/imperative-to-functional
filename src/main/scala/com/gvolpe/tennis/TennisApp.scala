@@ -1,4 +1,4 @@
-package com.gvolpe.exercise1.com.gvolpe.tenniskata
+package com.gvolpe.tennis
 
 object TennisApp extends App {
   val p1 = Player("p1")

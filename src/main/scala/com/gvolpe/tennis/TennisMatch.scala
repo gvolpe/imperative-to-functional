@@ -1,6 +1,6 @@
-package com.gvolpe.exercise1.com.gvolpe.tenniskata
+package com.gvolpe.tennis
 
-import com.gvolpe.exercise1.com.gvolpe.tenniskata.TennisMatch._
+import com.gvolpe.tennis.TennisMatch._
 
 sealed trait PointDescription {
   def next: Option[PointDescription]
@@ -16,15 +16,15 @@ case class Player(name: String)
 object TennisMatch {
 
   case class Score(p1: PointDescription, p2: PointDescription) {
-    def p1Score: Option[Score] = this match {
-      case Score(Advantage, Forty) |
-           Score(Forty, _)           => None
-      case Score(s1, s2)             => Some(Score(s1.next.get, s2))
+    def p1PointScored: Option[Score] = (p1, p2) match {
+      case (Advantage, Forty) |
+           (Forty, _)           => None
+      case (s1, s2)             => s1.next.map(s => Score(s, s2))
     }
-    def p2Score: Option[Score] = this match {
-      case Score(Forty, Advantage) |
-           Score(_, Forty)           => None
-      case Score(s1, s2)             => Some(Score(s1, s2.next.get))
+    def p2PointScored: Option[Score] = (p1, p2) match {
+      case (Forty, Advantage) |
+           (_, Forty)           => None
+      case (s1, s2)             => s2.next.map(s => Score(s1, s))
     }
   }
 
@@ -36,13 +36,13 @@ class TennisMatch(p1: Player, p2: Player) {
   private var history: Vector[Score] = Vector(Score(Love, Love))
   private var winner: Option[Player] = None
 
-  def playerOnePointScored(): Unit = history.last.p1Score match {
+  def playerOnePointScored(): Unit = history.last.p1PointScored match {
     case Some(score) => if (winner.isEmpty) history = history :+ score
     case None        => winner = Some(p1)
   }
 
   def playerTwoPointScored(): Unit = {
-    history.last.p2Score match {
+    history.last.p2PointScored match {
       case Some(score) => if (winner.isEmpty) history = history :+ score
       case None        => winner = Some(p2)
     }
