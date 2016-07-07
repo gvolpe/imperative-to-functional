@@ -23,9 +23,9 @@ class TennisMatch(p1: Player, p2: Player) {
       winner = Some(p1)
     case Score(Forty, Advantage) =>
       history = history :+ Score(Forty, Forty)
-    case Score(s1, s2) =>
+    case Score(s1, s2) if winner.isEmpty =>
       val newScore = s1.next.map(Score(_, s2))
-      if (winner.isEmpty) newScore.foreach(s => history = history :+ s)
+      newScore.foreach(s => history = history :+ s)
   }
 
   def playerTwoPointScored(): Unit = history.last match {
@@ -33,9 +33,9 @@ class TennisMatch(p1: Player, p2: Player) {
       winner = Some(p2)
     case Score(Advantage, Forty) =>
       history = history :+ Score(Forty, Forty)
-    case Score(s1, s2) =>
+    case Score(s1, s2) if winner.isEmpty =>
       val newScore = s2.next.map(Score(s1, _))
-      if (winner.isEmpty) newScore.foreach(s => history = history :+ s)
+      newScore.foreach(s => history = history :+ s)
   }
 
   def gameState: GameState = GameState(history.last, winner, history)
