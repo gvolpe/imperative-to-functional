@@ -6,22 +6,20 @@ object TennisApp extends App {
 
   val tennisMatch = new TennisMatch(p1, p2)
 
-  println(tennisMatch.gameState)
+  println(tennisMatch.winnerAndOrScore)
 
   tennisMatch.playerOnePointScored()
 
-  println(tennisMatch.gameState)
+  println(tennisMatch.winnerAndOrScore)
 
   tennisMatch.playerOnePointScored()
   tennisMatch.playerTwoPointScored()
 
-  println(tennisMatch.gameState)
+  println(tennisMatch.winnerAndOrScore)
 
-  tennisMatch.playerOnePointScored()
+  tennisMatch.playerTwoPointScored()
+  tennisMatch.playerTwoPointScored()
+  tennisMatch.playerTwoPointScored()
 
-  println(tennisMatch.gameState)
-
-  tennisMatch.playerOnePointScored()
-
-  println(tennisMatch.gameState)
+  println(tennisMatch.winnerAndOrScore)
 }

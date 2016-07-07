@@ -16,15 +16,15 @@ case class Player(name: String)
 object TennisMatch {
 
   case class Score(p1: PointDescription, p2: PointDescription) {
-    def p1Score: Option[Score] = (p1, p2) match {
-      case (Advantage, Forty) |
-           (Forty, _)           => None
-      case (s1, s2)             => Some(Score(s1.next.get, s2))
+    def p1Score: Option[Score] = this match {
+      case Score(Advantage, Forty) |
+           Score(Forty, _)           => None
+      case Score(s1, s2)             => Some(Score(s1.next.get, s2))
     }
-    def p2Score: Option[Score] = (p1, p2) match {
-      case (Forty, Advantage) |
-           (_, Forty)           => None
-      case (s1, s2)             => Some(Score(s1, s2.next.get))
+    def p2Score: Option[Score] = this match {
+      case Score(Forty, Advantage) |
+           Score(_, Forty)           => None
+      case Score(s1, s2)             => Some(Score(s1, s2.next.get))
     }
   }
 
@@ -36,29 +36,26 @@ class TennisMatch(p1: Player, p2: Player) {
   private var history: Vector[Score] = Vector(Score(Love, Love))
   private var winner: Option[Player] = None
 
-  private def pointScored(isPlayerOne: Boolean) = isPlayerOne match {
-    case true =>
-      val lastScore = history.last
-      lastScore.p1Score match {
-        case Some(score) => history = history :+ score
-        case None        => winner = Some(p1)
-      }
-    case false =>
-      val lastScore = history.last
-      lastScore.p2Score match {
-        case Some(score) => history = history :+ score
-        case None        => winner = Some(p2)
-      }
-      //require(winner.isEmpty, s"There is already a winner in the game: ${winner.get}")
+  def playerOnePointScored(): Unit = history.last.p1Score match {
+    case Some(score) => if (winner.isEmpty) history = history :+ score
+    case None        => winner = Some(p1)
   }
 
-  def playerOnePointScored(): Unit = pointScored(isPlayerOne = true)
-
-  def playerTwoPointScored(): Unit = pointScored(isPlayerOne = false)
+  def playerTwoPointScored(): Unit = {
+    history.last.p2Score match {
+      case Some(score) => if (winner.isEmpty) history = history :+ score
+      case None        => winner = Some(p2)
+    }
+  }
 
   def gameState: GameState = {
     val score = history.last
     GameState(score, winner, history)
+  }
+
+  def winnerAndOrScore: String = gameState.winner match {
+    case Some(player) => s"The Winner is ${player.name}! - Final Score: ${gameState.score}"
+    case None         => s"Current score: ${gameState.score}"
   }
 
 }
