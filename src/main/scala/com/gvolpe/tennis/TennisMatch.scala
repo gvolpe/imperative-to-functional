@@ -1,7 +1,5 @@
 package com.gvolpe.tennis
 
-import com.gvolpe.tennis.TennisMatch._
-
 sealed trait PointDescription {
   def next: Option[PointDescription]
 }
@@ -12,46 +10,35 @@ case object Forty     extends PointDescription { val next = Some(Advantage) }
 case object Advantage extends PointDescription { val next = None }
 
 case class Player(name: String)
-
-object TennisMatch {
-
-  case class Score(p1: PointDescription, p2: PointDescription) {
-    def p1PointScored: Option[Score] = (p1, p2) match {
-      case (Advantage, Forty) |
-           (Forty, _)           => None
-      case (s1, s2)             => s1.next.map(s => Score(s, s2))
-    }
-    def p2PointScored: Option[Score] = (p1, p2) match {
-      case (Forty, Advantage) |
-           (_, Forty)           => None
-      case (s1, s2)             => s2.next.map(s => Score(s1, s))
-    }
-  }
-
-  case class GameState(score: Score, winner: Option[Player], history: Vector[Score])
-}
+case class Score(p1: PointDescription, p2: PointDescription)
+case class GameState(score: Score, winner: Option[Player], history: Vector[Score])
 
 class TennisMatch(p1: Player, p2: Player) {
 
   private var history: Vector[Score] = Vector(Score(Love, Love))
   private var winner: Option[Player] = None
 
-  def playerOnePointScored(): Unit = history.last.p1PointScored match {
-    case Some(score) => if (winner.isEmpty) history = history :+ score
-    case None        => winner = Some(p1)
+  def playerOnePointScored(): Unit = history.last match {
+    case Score(Advantage, Forty) | Score(Forty, Love | Fifteen | Thirty) =>
+      winner = Some(p1)
+    case Score(Forty, Advantage) =>
+      history = history :+ Score(Forty, Forty)
+    case Score(s1, s2) =>
+      val newScore = s1.next.map(Score(_, s2))
+      if (winner.isEmpty) newScore.foreach(s => history = history :+ s)
   }
 
-  def playerTwoPointScored(): Unit = {
-    history.last.p2PointScored match {
-      case Some(score) => if (winner.isEmpty) history = history :+ score
-      case None        => winner = Some(p2)
-    }
+  def playerTwoPointScored(): Unit = history.last match {
+    case Score(Forty, Advantage) | Score(Love | Fifteen | Thirty, Forty) =>
+      winner = Some(p2)
+    case Score(Advantage, Forty) =>
+      history = history :+ Score(Forty, Forty)
+    case Score(s1, s2) =>
+      val newScore = s2.next.map(Score(s1, _))
+      if (winner.isEmpty) newScore.foreach(s => history = history :+ s)
   }
 
-  def gameState: GameState = {
-    val score = history.last
-    GameState(score, winner, history)
-  }
+  def gameState: GameState = GameState(history.last, winner, history)
 
   def winnerAndOrScore: String = gameState.winner match {
     case Some(player) => s"The Winner is ${player.name}! - Final Score: ${gameState.score}"
